@@ -3,10 +3,10 @@ import javax.swing.*;
 import java.awt.*;
 
 public class LoginPanel extends JPanel {
-    // ... (mesma estrutura de construtor do ConnectionPanel) ...
+    // ... (mesma estrutura de construtor) ...
 
     public LoginPanel(JPanel mainPanel, CardLayout cardLayout, NetworkService networkService) {
-        // ... (configuração do layout similar ao ConnectionPanel) ...
+        // ... (configuração do layout) ...
         setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -46,16 +46,17 @@ public class LoginPanel extends JPanel {
                 protected void done() {
                     try {
                         JSONObject response = get();
-                        // Pega o status da resposta
-                        int status = response.getInt("status");
+                        // ALTERAÇÃO: Lendo "status" como String
+                        String status = response.getString("status");
 
-                        if (status == 200) { // 200 OK
+                        // ALTERAÇÃO: Comparando como String
+                        if (status.equals("200")) { // 200 OK
                             // Passa os dados do usuário para o Dashboard
                             DashboardPanel dashboard = (DashboardPanel) mainPanel.getComponent(3);
                             dashboard.updateUserInfo(login); // Atualiza a UI com os dados do usuário
                             cardLayout.show(mainPanel, "DASHBOARD");
                         } else {
-                            // ALTERAÇÃO: Usa o StatusCodeHandler para obter a mensagem de erro
+                            // Usa o StatusCodeHandler para obter a mensagem de erro
                             String errorMessage = StatusCodeHandler.getMessage(status);
 
                             // Opcional: Se o servidor enviar um detalhe extra, podemos adicionar

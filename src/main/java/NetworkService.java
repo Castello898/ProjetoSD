@@ -43,11 +43,14 @@ public class NetworkService {
         try {
             return new JSONObject(responseStr);
         } catch (JSONException e) {
+            // ALTERAÇÃO: Garante que o status de erro local também seja uma String ("500")
             return new JSONObject()
-                    .put("status", 500);
-                    //.put("mensagem", "Resposta inválida (não-JSON) do servidor: " + responseStr);
+                    .put("status", "500")
+                    .put("mensagem", "Resposta inválida (não-JSON) do servidor: " + responseStr);
         }
     }
+
+    // ... (O restante da classe registerUser, loginUser, etc., não precisa ser alterado) ...
 
     /**
      * Cadastro de usuário (Operação: CRIAR_USUARIO)

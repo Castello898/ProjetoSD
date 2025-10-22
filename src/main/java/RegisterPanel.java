@@ -49,15 +49,17 @@ public class RegisterPanel extends JPanel {
                 protected void done() {
                     try {
                         JSONObject response = get();
-                        int status = response.getInt("status");
+                        // ALTERAÇÃO: Lendo "status" como String
+                        String status = response.getString("status");
 
-                        if (status == 201) { // 201 Created
+                        // ALTERAÇÃO: Comparando como String
+                        if (status.equals("201")) { // 201 Created
                             // Usa a mensagem de sucesso do nosso Handler
                             JOptionPane.showMessageDialog(RegisterPanel.this,
-                                    StatusCodeHandler.getMessage(status)); // MUDANÇA AQUI
+                                    StatusCodeHandler.getMessage(status)); // Passa a String
                             cardLayout.show(mainPanel, "LOGIN");
                         } else {
-                            // ALTERAÇÃO: Usa o StatusCodeHandler para obter a mensagem de erro
+                            // Usa o StatusCodeHandler para obter a mensagem de erro
                             String errorMessage = StatusCodeHandler.getMessage(status);
 
                             // Opcional: Se o servidor enviar um detalhe extra, podemos adicionar

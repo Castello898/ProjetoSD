@@ -9,6 +9,7 @@ public class DashboardPanel extends JPanel {
     private JLabel welcomeLabel;
 
     public DashboardPanel(JPanel mainPanel, CardLayout cardLayout, NetworkService networkService) {
+        // ... (construtor e layout igual) ...
         this.mainPanel = mainPanel;
         this.cardLayout = cardLayout;
         this.networkService = networkService;
@@ -55,8 +56,9 @@ public class DashboardPanel extends JPanel {
             if (choice == JOptionPane.YES_OPTION) {
                 executeNetworkTask(() -> {
                     JSONObject response = networkService.deleteUser();
-                    // A lógica de navegação só ocorre se o status for 200 (OK)
-                    if (response.getInt("status") == 200) {
+
+                    // ALTERAÇÃO: Lendo e comparando como String
+                    if (response.getString("status").equals("200")) {
                         SwingUtilities.invokeLater(() -> cardLayout.show(mainPanel, "CONNECTION"));
                     }
                     return response;
@@ -84,19 +86,16 @@ public class DashboardPanel extends JPanel {
             protected void done() {
                 try {
                     JSONObject response = get();
-                    int status = response.getInt("status");
+                    // ALTERAÇÃO: Lendo "status" como String
+                    String status = response.getString("status");
 
-                    // Verifica se o status é de sucesso (2xx)
-                    if (status >= 200 && status < 300) {
+                    // ALTERAÇÃO: Verificando se o status é de sucesso (começa com "2")
+                    if (status.startsWith("2")) {
                         String successMessage = StatusCodeHandler.getMessage(status);
 
                         // Para "Ver Perfil", é útil mostrar os dados retornados
                         if (title.equals("Dados do Perfil") && response.has("usuario")) {
-
-                            // CORREÇÃO AQUI:
-                            // O servidor envia o nome do usuário como String, não como Objeto.
-                            // Trocamos response.getJSONObject("usuario").toString(4)
-                            // por response.getString("usuario")
+                            // Correção da última vez (tratando usuário como String)
                             successMessage += "\n\nNome de Usuário: " + response.getString("usuario");
 
                         } else if (response.has("mensagem")) {
