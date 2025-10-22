@@ -55,8 +55,8 @@ public class DashboardPanel extends JPanel {
             if (choice == JOptionPane.YES_OPTION) {
                 executeNetworkTask(() -> {
                     JSONObject response = networkService.deleteUser();
+                    // A lógica de navegação só ocorre se o status for 200 (OK)
                     if (response.getInt("status") == 200) {
-                        // Força o logout no lado do cliente após a exclusão bem-sucedida
                         SwingUtilities.invokeLater(() -> cardLayout.show(mainPanel, "CONNECTION"));
                     }
                     return response;
@@ -67,6 +67,7 @@ public class DashboardPanel extends JPanel {
         // (d) Logout
         logoutButton.addActionListener(e -> executeNetworkTask(() -> {
             JSONObject response = networkService.logoutUser();
+            // Navega para a tela de conexão independentemente da resposta
             SwingUtilities.invokeLater(() -> cardLayout.show(mainPanel, "CONNECTION"));
             return response;
         }, "Logout"));
@@ -83,9 +84,47 @@ public class DashboardPanel extends JPanel {
             protected void done() {
                 try {
                     JSONObject response = get();
-                    JOptionPane.showMessageDialog(DashboardPanel.this, response.toString(4), title, JOptionPane.INFORMATION_MESSAGE);
+                    int status = response.getInt("status");
+
+                    // Verifica se o status é de sucesso (2xx)
+                    if (status >= 200 && status < 300) {
+                        String successMessage = StatusCodeHandler.getMessage(status);
+
+                        // Para "Ver Perfil", é útil mostrar os dados retornados
+                        if (title.equals("Dados do Perfil") && response.has("usuario")) {
+
+                            // CORREÇÃO AQUI:
+                            // O servidor envia o nome do usuário como String, não como Objeto.
+                            // Trocamos response.getJSONObject("usuario").toString(4)
+                            // por response.getString("usuario")
+                            successMessage += "\n\nNome de Usuário: " + response.getString("usuario");
+
+                        } else if (response.has("mensagem")) {
+                            successMessage += "\nDetalhe: " + response.getString("mensagem");
+                        }
+
+                        JOptionPane.showMessageDialog(DashboardPanel.this,
+                                successMessage,
+                                title, // Título da ação
+                                JOptionPane.INFORMATION_MESSAGE); // Ícone de informação
+
+                    } else {
+                        // É um erro (4xx, 5xx)
+                        String errorMessage = StatusCodeHandler.getMessage(status);
+                        if (response.has("mensagem")) {
+                            errorMessage += "\nDetalhe: " + response.getString("mensagem");
+                        }
+                        JOptionPane.showMessageDialog(DashboardPanel.this,
+                                errorMessage,
+                                "Erro em: " + title, // Título da ação
+                                JOptionPane.ERROR_MESSAGE); // Ícone de erro
+                    }
+
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(DashboardPanel.this, "Erro: " + ex.getMessage(), title, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(DashboardPanel.this,
+                            "Erro de comunicação: " + ex.getMessage(),
+                            "Erro em: " + title,
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         }.execute();

@@ -52,16 +52,19 @@ public class RegisterPanel extends JPanel {
                         int status = response.getInt("status");
 
                         if (status == 201) { // 201 Created
-                            // CORREÇÃO: Exibe uma mensagem de sucesso padrão, pois o servidor não envia uma.
+                            // Usa a mensagem de sucesso do nosso Handler
                             JOptionPane.showMessageDialog(RegisterPanel.this,
-                                    "Usuário cadastrado com sucesso!");
+                                    StatusCodeHandler.getMessage(status)); // MUDANÇA AQUI
                             cardLayout.show(mainPanel, "LOGIN");
                         } else {
-                            // CORREÇÃO: Verifica se a chave "mensagem" existe antes de usá-la.
-                            String errorMessage = "Ocorreu um erro desconhecido.";
+                            // ALTERAÇÃO: Usa o StatusCodeHandler para obter a mensagem de erro
+                            String errorMessage = StatusCodeHandler.getMessage(status);
+
+                            // Opcional: Se o servidor enviar um detalhe extra, podemos adicionar
                             if (response.has("mensagem")) {
-                                errorMessage = response.getString("mensagem");
+                                errorMessage += "\nDetalhe: " + response.getString("mensagem");
                             }
+
                             JOptionPane.showMessageDialog(RegisterPanel.this,
                                     errorMessage, "Erro de Cadastro", JOptionPane.ERROR_MESSAGE);
                         }
