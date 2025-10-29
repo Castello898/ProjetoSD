@@ -53,7 +53,6 @@ public class ConnectionPanel extends JPanel {
             String ip = ipField.getText();
             String portStr = portField.getText();
 
-            // Ação de conectar executada em uma thread separada para não travar a UI
             new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() throws Exception {
@@ -65,7 +64,7 @@ public class ConnectionPanel extends JPanel {
                 @Override
                 protected void done() {
                     try {
-                        get(); // Pega exceções do doInBackground
+                        get();
                         JOptionPane.showMessageDialog(ConnectionPanel.this, "Conexão estabelecida com sucesso!");
                         cardLayout.show(mainPanel, "LOGIN");
                     } catch (Exception ex) {

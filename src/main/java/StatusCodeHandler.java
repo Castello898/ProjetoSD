@@ -24,7 +24,8 @@ public class StatusCodeHandler {
         messages.put("401", "Não autorizado: Credenciais inválidas.");
         messages.put("403", "Proibido: Você tentou acessar/excluir um recurso que não lhe pertence ou para o qual não tem privilégios de administrador.");
         messages.put("404", "Não encontrado: O id do filme/review/usuário não existe.");
-        messages.put("409", "Conflito: A instância já existe."); // Conforme sua imagem (409 Already exists)
+        messages.put("405", "Campos inválidos, verifique o tipo e quantidade de caracteres");
+        messages.put("409", "Conflito: A instância já existe.");
         messages.put("410", "Recurso indisponível: O recurso que você está tentando acessar existiu no passado, mas foi intencionalmente removido e não voltará.");
         messages.put("411", "Tamanho necessário: O servidor precisa saber o tamanho do conteúdo (Content-Length).");
         messages.put("413", "Conteúdo muito grande: A requisição é maior do que o servidor está disposto a processar.");

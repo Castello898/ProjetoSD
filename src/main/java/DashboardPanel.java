@@ -9,7 +9,7 @@ public class DashboardPanel extends JPanel {
     private JLabel welcomeLabel;
 
     public DashboardPanel(JPanel mainPanel, CardLayout cardLayout, NetworkService networkService) {
-        // ... (construtor e layout igual) ...
+
         this.mainPanel = mainPanel;
         this.cardLayout = cardLayout;
         this.networkService = networkService;
@@ -21,7 +21,7 @@ public class DashboardPanel extends JPanel {
         welcomeLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
         add(welcomeLabel, BorderLayout.NORTH);
 
-        // Painel com os botões de ação
+        // Botões
         JPanel actionsPanel = new JPanel(new GridLayout(0, 1, 10, 10));
         JButton viewProfileButton = new JButton("Ver Meus Dados (R)");
         JButton updatePasswordButton = new JButton("Atualizar Senha (U)");
@@ -37,10 +37,10 @@ public class DashboardPanel extends JPanel {
 
         // --- Ações dos Botões ---
 
-        // (b) Ler dados do cadastro
+        //Ler dados do cadastro
         viewProfileButton.addActionListener(e -> executeNetworkTask(networkService::viewProfile, "Dados do Perfil"));
 
-        // (e) Atualizar senha
+        //Atualizar senha
         updatePasswordButton.addActionListener(e -> {
             String newPassword = JOptionPane.showInputDialog(this, "Digite a nova senha:", "Atualizar Senha", JOptionPane.PLAIN_MESSAGE);
             if (newPassword != null && !newPassword.trim().isEmpty()) {
@@ -48,7 +48,7 @@ public class DashboardPanel extends JPanel {
             }
         });
 
-        // (f) Apagar conta
+        //Apagar conta
         deleteAccountButton.addActionListener(e -> {
             int choice = JOptionPane.showConfirmDialog(this,
                     "Tem certeza que deseja apagar sua conta? Esta ação é irreversível.",
@@ -66,7 +66,7 @@ public class DashboardPanel extends JPanel {
             }
         });
 
-        // (d) Logout
+        //Logout
         logoutButton.addActionListener(e -> executeNetworkTask(() -> {
             JSONObject response = networkService.logoutUser();
             // Navega para a tela de conexão independentemente da resposta
@@ -75,7 +75,7 @@ public class DashboardPanel extends JPanel {
         }, "Logout"));
     }
 
-    // Método auxiliar para executar tarefas de rede e mostrar o resultado
+
     private void executeNetworkTask(NetworkTask task, String title) {
         new SwingWorker<JSONObject, Void>() {
             @Override
@@ -86,16 +86,14 @@ public class DashboardPanel extends JPanel {
             protected void done() {
                 try {
                     JSONObject response = get();
-                    // ALTERAÇÃO: Lendo "status" como String
                     String status = response.getString("status");
 
-                    // ALTERAÇÃO: Verificando se o status é de sucesso (começa com "2")
                     if (status.startsWith("2")) {
                         String successMessage = StatusCodeHandler.getMessage(status);
 
-                        // Para "Ver Perfil", é útil mostrar os dados retornados
+
                         if (title.equals("Dados do Perfil") && response.has("usuario")) {
-                            // Correção da última vez (tratando usuário como String)
+
                             successMessage += "\n\nNome de Usuário: " + response.getString("usuario");
 
                         } else if (response.has("mensagem")) {
@@ -104,19 +102,19 @@ public class DashboardPanel extends JPanel {
 
                         JOptionPane.showMessageDialog(DashboardPanel.this,
                                 successMessage,
-                                title, // Título da ação
-                                JOptionPane.INFORMATION_MESSAGE); // Ícone de informação
+                                title,
+                                JOptionPane.INFORMATION_MESSAGE);
 
                     } else {
-                        // É um erro (4xx, 5xx)
+                        // É erro
                         String errorMessage = StatusCodeHandler.getMessage(status);
                         if (response.has("mensagem")) {
                             errorMessage += "\nDetalhe: " + response.getString("mensagem");
                         }
                         JOptionPane.showMessageDialog(DashboardPanel.this,
                                 errorMessage,
-                                "Erro em: " + title, // Título da ação
-                                JOptionPane.ERROR_MESSAGE); // Ícone de erro
+                                "Erro em: " + title,
+                                JOptionPane.ERROR_MESSAGE);
                     }
 
                 } catch (Exception ex) {
@@ -129,13 +127,13 @@ public class DashboardPanel extends JPanel {
         }.execute();
     }
 
-    // Interface funcional para simplificar a chamada do SwingWorker
+
     @FunctionalInterface
     interface NetworkTask {
         JSONObject execute() throws Exception;
     }
 
-    // Método para atualizar a UI quando o usuário faz login
+
     public void updateUserInfo(String username) {
         welcomeLabel.setText("Bem-vindo, " + username + "!");
     }
