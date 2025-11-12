@@ -112,10 +112,10 @@ public class DashboardPanel extends JPanel {
         listMoviesButton.addActionListener(e -> executeNetworkTask(networkService::listAllMovies, "Listar Filmes"));
 
         // --- Ações dos Botões (Admin) ---
+
         listUsersButton.addActionListener(e -> executeNetworkTask(networkService::listAllUsers, "Listar Usuários"));
 
         createMovieButton.addActionListener(e -> {
-            // (Para um app real, seria melhor um JPanel customizado no JOptionPane)
             String titulo = JOptionPane.showInputDialog(this, "Título:");
             if (titulo == null) return;
             String diretor = JOptionPane.showInputDialog(this, "Diretor:");
@@ -133,7 +133,6 @@ public class DashboardPanel extends JPanel {
         updateMovieButton.addActionListener(e -> {
             String id = JOptionPane.showInputDialog(this, "ID do filme a EDITAR:");
             if (id == null || id.trim().isEmpty()) return;
-            // ... (resto dos JOptionPanes)
             String titulo = JOptionPane.showInputDialog(this, "Novo Título:");
             if (titulo == null) return;
             String diretor = JOptionPane.showInputDialog(this, "Novo Diretor:");
@@ -202,7 +201,6 @@ public class DashboardPanel extends JPanel {
             protected JSONObject doInBackground() throws Exception {
                 return task.execute();
             }
-
             @Override
             protected void done() {
                 try {
@@ -215,10 +213,12 @@ public class DashboardPanel extends JPanel {
 
                         // --- LÓGICA ATUALIZADA ---
                         if (title.equals("Listar Filmes") && response.has("filmes")) {
-                            // CHAMA O NOVO MÉTODO ELEGANTE!
                             showElegantMovieList(response.getJSONArray("filmes"));
+
+                            // ### MUDANÇA PRINCIPAL AQUI ###
                         } else if (title.equals("Listar Usuários") && response.has("usuarios")) {
-                            showListPopup(response.getJSONArray("usuarios"), title); // Mantém o popup antigo para usuários
+                            showElegantUserList(response.getJSONArray("usuarios")); // Chama o novo método
+
                         } else if (title.equals("Dados do Perfil") && response.has("usuario")) {
                             successMessage += "\n\nNome de Usuário: " + response.getString("usuario");
                             JOptionPane.showMessageDialog(DashboardPanel.this, successMessage, title, JOptionPane.INFORMATION_MESSAGE);
@@ -227,7 +227,13 @@ public class DashboardPanel extends JPanel {
                             if (response.has("mensagem")) {
                                 successMessage += "\nDetalhe: " + response.getString("mensagem");
                             }
-                            JOptionPane.showMessageDialog(DashboardPanel.this, successMessage, title, JOptionPane.INFORMATION_MESSAGE);
+                            // Não mostra popup para tarefas internas (como apagar user do card)
+                            if (!title.equals("Apagar Usuário") && !title.equals("Alterar Senha de Usuário")) {
+                                JOptionPane.showMessageDialog(DashboardPanel.this, successMessage, title, JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                // Apenas para as ações do card, mostra um popup mais simples
+                                JOptionPane.showMessageDialog(DashboardPanel.this, successMessage, title, JOptionPane.INFORMATION_MESSAGE);
+                            }
                         }
                         // --- FIM DA LÓGICA ATUALIZADA ---
 
@@ -244,7 +250,6 @@ public class DashboardPanel extends JPanel {
                     }
 
                 } catch (Exception ex) {
-                    ex.printStackTrace(); // Bom para debugar
                     JOptionPane.showMessageDialog(DashboardPanel.this,
                             "Erro de comunicação: " + ex.getMessage(),
                             "Erro em: " + title,
@@ -355,6 +360,113 @@ public class DashboardPanel extends JPanel {
         return card;
     }
 
+    private void showElegantUserList(JSONArray users) {
+        JDialog userDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Usuários - VoteFlix", true);
+        userDialog.setSize(600, 500);
+        userDialog.setLocationRelativeTo(this);
+        userDialog.setLayout(new BorderLayout());
+
+        if (users.isEmpty()) {
+            JLabel noUsersLabel = new JLabel("Nenhum usuário encontrado.", SwingConstants.CENTER);
+            noUsersLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+            userDialog.add(noUsersLabel, BorderLayout.CENTER);
+            userDialog.setVisible(true);
+            return;
+        }
+
+        // Painel que conterá os cards, com um grid layout (2 colunas)
+        JPanel gridPanel = new JPanel(new GridLayout(0, 2, 15, 15)); // 0 linhas, 2 colunas, 15px de gap
+        gridPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject user = users.getJSONObject(i);
+            JPanel userCard = createUserCard(user); // Chama o novo método
+            gridPanel.add(userCard);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(gridPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBorder(null);
+
+        userDialog.add(scrollPane, BorderLayout.CENTER);
+        userDialog.setVisible(true);
+    }
+
+    /**
+     * NOVO MÉTODO: Cria um painel (card) para um único usuário, com botões de ação.
+     */
+    private JPanel createUserCard(JSONObject user) {
+        JPanel card = new JPanel(new BorderLayout(10, 10));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 1),
+                new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        // Nome e ID do usuário
+        String nome = user.optString("nome", "N/A");
+        String id = user.optString("id", "N/A");
+        JLabel titleLabel = new JLabel(String.format("<html><b>%s</b> (ID: %s)</html>", nome, id));
+        titleLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
+
+        // Adiciona um ícone (placeholder)
+        // (Em um app real, você poderia carregar uma imagem de avatar)
+        JLabel iconLabel = new JLabel("👤");
+        iconLabel.setFont(new Font("SansSerif", Font.PLAIN, 32));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(iconLabel, BorderLayout.WEST);
+
+        card.add(titleLabel, BorderLayout.CENTER);
+
+        // Painel de botões de ação
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton passwordButton = new JButton("Alterar Senha");
+        JButton deleteButton = new JButton("Apagar");
+
+        styleButtonAsDestructive(deleteButton); // Deixa o botão de apagar vermelho
+
+        buttonPanel.add(passwordButton);
+        buttonPanel.add(deleteButton);
+        card.add(buttonPanel, BorderLayout.SOUTH);
+
+        // --- Ações dos Botões do Card ---
+
+        // Ação de Alterar Senha
+        passwordButton.addActionListener(e -> {
+            String newPassword = JOptionPane.showInputDialog(card, "Nova senha para " + nome + ":");
+            if (newPassword != null && !newPassword.trim().isEmpty()) {
+                // Reutiliza o método executeNetworkTask que já existe!
+                executeNetworkTask(() -> networkService.updateOtherUserPassword(id, newPassword), "Alterar Senha de Usuário");
+            }
+        });
+
+        // Ação de Apagar Usuário
+        deleteButton.addActionListener(e -> {
+            // Regra de negócio do servidor: não pode apagar o admin
+            if (nome.equals("admin")) {
+                JOptionPane.showMessageDialog(card, "Não é permitido excluir o usuário 'admin'.", "Ação Proibida", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int choice = JOptionPane.showConfirmDialog(card,
+                    "Tem certeza que deseja apagar o usuário " + nome + "?\n(ID: " + id + ")",
+                    "Confirmar Exclusão", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (choice == JOptionPane.YES_OPTION) {
+                // Reutiliza o método executeNetworkTask
+                executeNetworkTask(() -> networkService.deleteOtherUser(id), "Apagar Usuário");
+
+                // Remove o card da tela para feedback imediato
+                // (O usuário terá que reabrir a lista para ver a mudança permanente)
+                card.setVisible(false);
+                // Força o contêiner a se redesenhar sem o card
+                card.getParent().revalidate();
+                card.getParent().repaint();
+            }
+        });
+
+        return card;
+    }
 
     @FunctionalInterface
     interface NetworkTask {

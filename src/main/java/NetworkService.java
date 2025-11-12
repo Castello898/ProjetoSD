@@ -181,6 +181,27 @@ public class NetworkService {
         return sendRequest(request);
     }
 
+    public JSONObject deleteOtherUser(String id) throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "ADMIN_EXCLUIR_USUARIO");
+        request.put("token", this.token);
+        request.put("id", id); // ID do usuário a ser excluído
+        return sendRequest(request);
+    }
+
+    public JSONObject updateOtherUserPassword(String id, String newPassword) throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "ADMIN_EDITAR_USUARIO");
+        request.put("token", this.token);
+        request.put("id", id); // ID do usuário a ser editado
+
+        JSONObject userData = new JSONObject();
+        userData.put("senha", newPassword);
+        request.put("usuario", userData);
+
+        return sendRequest(request);
+    }
+
     // --- FIM DOS NOVOS MÉTODOS ---
 
     public void closeConnection() throws IOException {
