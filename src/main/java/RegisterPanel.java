@@ -49,9 +49,9 @@ public class RegisterPanel extends JPanel {
                 protected void done() {
                     try {
                         JSONObject response = get();
-                        int status = response.getInt("status");
+                        String status = response.getString("status");
 
-                        if (status == 201) { // 201 Created
+                        if (status.equals("201")) {// 201 Created
                             // Usa a mensagem de sucesso do nosso Handler
                             JOptionPane.showMessageDialog(RegisterPanel.this,
                                     StatusCodeHandler.getMessage(status)); // MUDANÇA AQUI

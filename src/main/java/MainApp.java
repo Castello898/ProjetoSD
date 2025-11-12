@@ -6,7 +6,7 @@ public class MainApp {
     public static void main(String[] args) {
         // Tenta aplicar um Look and Feel mais moderno
         try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.Nimbus.LookAndFeel");
         } catch (Exception e) {
             e.printStackTrace();
         }

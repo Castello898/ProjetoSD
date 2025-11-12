@@ -47,16 +47,16 @@ public class LoginPanel extends JPanel {
                     try {
                         JSONObject response = get();
                         // Pega o status da resposta
-                        int status = response.getInt("status");
+                        String status = response.getString("status");
 
-                        if (status == 200) { // 200 OK
+                        if (status.equals("200")) { // 200 OK
                             // Passa os dados do usuário para o Dashboard
                             DashboardPanel dashboard = (DashboardPanel) mainPanel.getComponent(3);
                             dashboard.updateUserInfo(login); // Atualiza a UI com os dados do usuário
                             cardLayout.show(mainPanel, "DASHBOARD");
                         } else {
-                            // ALTERAÇÃO: Usa o StatusCodeHandler para obter a mensagem de erro
-                            String errorMessage = StatusCodeHandler.getMessage(status);
+                            // Usa o StatusCodeHandler para obter a mensagem de erro
+                            String errorMessage = StatusCodeHandler.getMessage(status); // Agora 'status' é String
 
                             // Opcional: Se o servidor enviar um detalhe extra, podemos adicionar
                             if (response.has("mensagem")) {
