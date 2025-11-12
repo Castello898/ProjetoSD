@@ -1,20 +1,22 @@
+import com.formdev.flatlaf.FlatDarkLaf; // Importar o Look and Feel
 import javax.swing.*;
 import java.awt.*;
 
 public class MainApp {
 
     public static void main(String[] args) {
-        // Tenta aplicar um Look and Feel mais moderno
+        // Configura o Look and Feel escuro ANTES de qualquer componente Swing
         try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.Nimbus.LookAndFeel");
+            UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (Exception e) {
+            System.err.println("Falha ao inicializar o FlatLaf. Usando L&F padrão.");
             e.printStackTrace();
         }
 
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("VoteFlix Client");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(450, 500);
+            frame.setSize(500, 600); // Ajustei o tamanho para o novo layout
 
             CardLayout cardLayout = new CardLayout();
             JPanel mainPanel = new JPanel(cardLayout);
@@ -22,6 +24,7 @@ public class MainApp {
             NetworkService networkService = new NetworkService();
 
             // Cria os painéis (telas)
+            // OBS: O FlatLaf vai automaticamente aplicar o tema escuro a todos!
             ConnectionPanel connectionPanel = new ConnectionPanel(mainPanel, cardLayout, networkService);
             LoginPanel loginPanel = new LoginPanel(mainPanel, cardLayout, networkService);
             RegisterPanel registerPanel = new RegisterPanel(mainPanel, cardLayout, networkService);
