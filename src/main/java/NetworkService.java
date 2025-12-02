@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Classe responsável pela comunicação com o servidor.
- * VERSÃO ATUALIZADA COM MÉTODOS DE FILMES E ADMIN.
+ * ATUALIZADO: Inclui métodos para gerenciamento de Reviews e busca detalhada.
  */
 public class NetworkService {
 
@@ -50,11 +50,11 @@ public class NetworkService {
         }
     }
 
-    // --- MÉTODOS DE USUÁRIO (Já existentes) ---
+    // --- MÉTODOS DE CONTA E USUÁRIO ---
 
     public JSONObject registerUser(String nome, String password) throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "CRIAR_USUARIO"); //
+        request.put("operacao", "CRIAR_USUARIO");
         JSONObject userData = new JSONObject();
         userData.put("nome", nome);
         userData.put("senha", password);
@@ -64,7 +64,7 @@ public class NetworkService {
 
     public JSONObject loginUser(String login, String password) throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "LOGIN"); //
+        request.put("operacao", "LOGIN");
         request.put("usuario", login);
         request.put("senha", password);
         JSONObject response = sendRequest(request);
@@ -76,14 +76,14 @@ public class NetworkService {
 
     public JSONObject viewProfile() throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "LISTAR_PROPRIO_USUARIO"); //
+        request.put("operacao", "LISTAR_PROPRIO_USUARIO");
         request.put("token", this.token);
         return sendRequest(request);
     }
 
     public JSONObject updateUserPassword(String newPassword) throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "EDITAR_PROPRIO_USUARIO"); //
+        request.put("operacao", "EDITAR_PROPRIO_USUARIO");
         request.put("token", this.token);
         JSONObject userData = new JSONObject();
         userData.put("senha", newPassword);
@@ -93,14 +93,14 @@ public class NetworkService {
 
     public JSONObject deleteUser() throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "EXCLUIR_PROPRIO_USUARIO"); //
+        request.put("operacao", "EXCLUIR_PROPRIO_USUARIO");
         request.put("token", this.token);
         return sendRequest(request);
     }
 
     public JSONObject logoutUser() throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "LOGOUT"); //
+        request.put("operacao", "LOGOUT");
         request.put("token", this.token);
         JSONObject response = sendRequest(request);
         this.token = null;
@@ -108,58 +108,32 @@ public class NetworkService {
         return response;
     }
 
-    // --- NOVOS MÉTODOS (Itens Avaliados) ---
+    // --- MÉTODOS DE FILMES ---
 
-    /**
-     * Item (c, g): Listar todos os filmes (ADM e Comum)
-     */
     public JSONObject listAllMovies() throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "LISTAR_FILMES"); //
+        request.put("operacao", "LISTAR_FILMES");
         request.put("token", this.token);
         return sendRequest(request);
     }
 
     /**
-     * Item (f): Listar todos os usuários (ADM)
+     * [cite_start]Busca filme por ID para ver detalhes e reviews[cite: 14].
      */
-    public JSONObject listAllUsers() throws IOException {
+    public JSONObject getMovieById(String idFilme) throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "LISTAR_USUARIOS"); //
+        request.put("operacao", "BUSCAR_FILME_ID");
+        request.put("id_filme", idFilme);
         request.put("token", this.token);
         return sendRequest(request);
     }
 
-    /**
-     * Item (b): Criar dados de filme (ADM)
-     */
     public JSONObject createMovie(String titulo, String diretor, String ano, String generos, String sinopse) throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "CRIAR_FILME"); // [cite: 275]
+        request.put("operacao", "CRIAR_FILME");
         request.put("token", this.token);
 
         JSONObject filmeData = new JSONObject();
-        filmeData.put("titulo", titulo); // [cite: 234]
-        filmeData.put("diretor", diretor); // [cite: 236]
-        filmeData.put("ano", ano); // [cite: 235]
-        // Converte a string "A,B,C" para um JSONArray ["A", "B", "C"] [cite: 240]
-        filmeData.put("genero", new JSONArray(generos.split(",")));
-        filmeData.put("sinopse", sinopse); // [cite: 238]
-
-        request.put("filme", filmeData);
-        return sendRequest(request);
-    }
-
-    /**
-     * Item (d): Editar dados de filme (ADM)
-     */
-    public JSONObject updateMovie(String id, String titulo, String diretor, String ano, String generos, String sinopse) throws IOException {
-        JSONObject request = new JSONObject();
-        request.put("operacao", "EDITAR_FILME"); //
-        request.put("token", this.token);
-
-        JSONObject filmeData = new JSONObject();
-        filmeData.put("id", id); // [cite: 233]
         filmeData.put("titulo", titulo);
         filmeData.put("diretor", diretor);
         filmeData.put("ano", ano);
@@ -170,14 +144,93 @@ public class NetworkService {
         return sendRequest(request);
     }
 
-    /**
-     * Item (e): Apagar dados de filmes (ADM)
-     */
+    public JSONObject updateMovie(String id, String titulo, String diretor, String ano, String generos, String sinopse) throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "EDITAR_FILME");
+        request.put("token", this.token);
+
+        JSONObject filmeData = new JSONObject();
+        filmeData.put("id", id);
+        filmeData.put("titulo", titulo);
+        filmeData.put("diretor", diretor);
+        filmeData.put("ano", ano);
+        filmeData.put("genero", new JSONArray(generos.split(",")));
+        filmeData.put("sinopse", sinopse);
+
+        request.put("filme", filmeData);
+        return sendRequest(request);
+    }
+
     public JSONObject deleteMovie(String id) throws IOException {
         JSONObject request = new JSONObject();
-        request.put("operacao", "EXCLUIR_FILME"); //
+        request.put("operacao", "EXCLUIR_FILME");
         request.put("token", this.token);
-        request.put("id", id); // ID é enviado fora do objeto 'filme'
+        request.put("id", id);
+        return sendRequest(request);
+    }
+
+    // --- MÉTODOS DE REVIEWS (Novos) ---
+
+    /**
+     * [cite_start]Cria uma nova review para um filme[cite: 5].
+     */
+    public JSONObject createReview(String idFilme, String titulo, String descricao, String nota) throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "CRIAR_REVIEW");
+        request.put("token", this.token);
+
+        JSONObject reviewData = new JSONObject();
+        reviewData.put("id_filme", idFilme);
+        reviewData.put("titulo", titulo);
+        reviewData.put("descricao", descricao);
+        reviewData.put("nota", nota);
+
+        request.put("review", reviewData);
+        return sendRequest(request);
+    }
+
+    /**
+     * [cite_start]Edita uma review existente[cite: 23].
+     */
+    public JSONObject updateReview(String idReview, String titulo, String descricao, String nota) throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "EDITAR_REVIEW");
+        request.put("token", this.token);
+
+        JSONObject reviewData = new JSONObject();
+        reviewData.put("id", idReview);
+        reviewData.put("titulo", titulo);
+        reviewData.put("descricao", descricao);
+        reviewData.put("nota", nota);
+
+        request.put("review", reviewData);
+        return sendRequest(request);
+    }
+
+    /**
+     * [cite_start]Exclui uma review (Própria ou por Admin)[cite: 29].
+     */
+    public JSONObject deleteReview(String idReview) throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "EXCLUIR_REVIEW");
+        request.put("token", this.token);
+        request.put("id", idReview);
+        return sendRequest(request);
+    }
+
+    public JSONObject listMyReviews() throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "LISTAR_REVIEWS_USUARIO");
+        request.put("token", this.token);
+        return sendRequest(request);
+    }
+
+    // --- MÉTODOS DE ADMINISTRAÇÃO DE USUÁRIOS ---
+
+    public JSONObject listAllUsers() throws IOException {
+        JSONObject request = new JSONObject();
+        request.put("operacao", "LISTAR_USUARIOS");
+        request.put("token", this.token);
         return sendRequest(request);
     }
 
@@ -185,7 +238,7 @@ public class NetworkService {
         JSONObject request = new JSONObject();
         request.put("operacao", "ADMIN_EXCLUIR_USUARIO");
         request.put("token", this.token);
-        request.put("id", id); // ID do usuário a ser excluído
+        request.put("id", id);
         return sendRequest(request);
     }
 
@@ -193,7 +246,7 @@ public class NetworkService {
         JSONObject request = new JSONObject();
         request.put("operacao", "ADMIN_EDITAR_USUARIO");
         request.put("token", this.token);
-        request.put("id", id); // ID do usuário a ser editado
+        request.put("id", id);
 
         JSONObject userData = new JSONObject();
         userData.put("senha", newPassword);
@@ -201,8 +254,6 @@ public class NetworkService {
 
         return sendRequest(request);
     }
-
-    // --- FIM DOS NOVOS MÉTODOS ---
 
     public void closeConnection() throws IOException {
         if (in != null) in.close();
